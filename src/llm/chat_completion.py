@@ -6,10 +6,10 @@ from .count_tokens import count_tokens
 from .model_specs import get_model_spec, ModelType
 
 def setup():
-    openai_api_key = env["OPENAI_API_KEY"]
-    if not openai_api_key:
+    if openai_api_key := env["OPENAI_API_KEY"]:
+        openai.api_key = openai_api_key
+    else:
         raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
-    openai.api_key = openai_api_key
 
 setup()
 
@@ -23,8 +23,12 @@ def compose_examples(examples):
     # TODO experiment with 'name' field (https://github.com/openai/openai-cookbook/blob/main/examples/How_to_format_inputs_to_ChatGPT_models.ipynb)
     out = [] # TODO use list comprehension
     for example in examples:
-        out.append({"role": "user", "content": example[0]})
-        out.append({"role": "assistant", "content": example[1]})
+        out.extend(
+            (
+                {"role": "user", "content": example[0]},
+                {"role": "assistant", "content": example[1]},
+            )
+        )
     return out
 
 def compose_user(user):
@@ -55,22 +59,16 @@ def chat_completion(system, examples, user, model=ModelType.GPT_4):
 
         messages = compose_messages(system, examples, user)
 
-        completion = openai.ChatCompletion.create(
+        return openai.ChatCompletion.create(
             model=model_spec["id"],
             messages=messages,
-            temperature=0, # based on HuggingGPT
+            temperature=0,  # based on HuggingGPT
         )
-
-        return completion
     except openai.error.APIError as e:
         console.error(f"(llm) OpenAI API returned an API Error: {e}")
-        pass
     except openai.error.APIConnectionError as e:
         console.error(f"(llm) Failed to connect to OpenAI API: {e}")
-        pass
     except openai.error.RateLimitError as e:
         console.error(f"(llm) OpenAI API request exceeded rate limit: {e}")
-        pass
     except Exception as e:
         console.error(f"(llm) {e.__class__.__name__}: {e}")
-        pass

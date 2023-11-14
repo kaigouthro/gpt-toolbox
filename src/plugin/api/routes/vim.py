@@ -7,8 +7,7 @@ from utils import console, run_shell_command
 def vim_ex_command(commands, file_path):
     commands = [shlex.quote(command) for command in commands] # shell escape each command
     vim_commands = ' '.join(f'-c "{command}"' for command in commands)
-    vim_command = f'vim -es -u NONE {vim_commands} -c "wq" {file_path}'
-    return vim_command
+    return f'vim -es -u NONE {vim_commands} -c "wq" {file_path}'
 
 def vim_view(file_path):
     response = {
@@ -57,7 +56,7 @@ def vim(server):
 
         vim_command = vim_ex_command([request.json["command"]], request.json["file_name"])
 
-        console.verbose(f"vim_ex running vim command")
+        console.verbose("vim_ex running vim command")
         console.verbose(vim_command)
 
         return jsonify(run_shell_command(vim_command)), 200

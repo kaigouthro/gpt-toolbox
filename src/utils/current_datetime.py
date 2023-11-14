@@ -11,7 +11,4 @@ def current_datetime():
 
     localized_datetime = local_timezone.localize(datetime.now())
 
-    # Format the localized datetime in a human-readable format
-    formatted_datetime = localized_datetime.strftime('%B-%d-%Y %H:%M:%S %Z (UTC%z)')
-
-    return formatted_datetime
+    return localized_datetime.strftime('%B-%d-%Y %H:%M:%S %Z (UTC%z)')

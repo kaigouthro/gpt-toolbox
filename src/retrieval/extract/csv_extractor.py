@@ -11,10 +11,7 @@ class CsvExtractor(DocumentExtractor):
             headers = next(reader, None)
             if headers is None:
                 return False
-            for row in reader:
-                if len(row) != len(headers):
-                    return False
-            return True
+            return all(len(row) == len(headers) for row in reader)
         except Exception:
             return False
 

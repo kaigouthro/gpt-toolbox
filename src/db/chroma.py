@@ -8,17 +8,15 @@ from llm import generate_embedding
 from .abstract_document_database import AbstractDocumentDatabase, QueryResult, QueryResults
 
 def serialize_chroma_query_result(data) -> QueryResults:
-    output = []
-    for idx, item in enumerate(data["ids"][0]):
-        output.append(
-            QueryResult(
-                _id=item,
-                document=data["documents"][0][idx],
-                metadata=data["metadatas"][0][idx],
-                distance=data["distances"][0][idx],
-            )
+    return [
+        QueryResult(
+            _id=item,
+            document=data["documents"][0][idx],
+            metadata=data["metadatas"][0][idx],
+            distance=data["distances"][0][idx],
         )
-    return output
+        for idx, item in enumerate(data["ids"][0])
+    ]
 
 def _generate_embedding(text):
     if isinstance(text, list):
