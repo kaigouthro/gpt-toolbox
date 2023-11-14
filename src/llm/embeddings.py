@@ -12,5 +12,4 @@ def generate_embedding(text, model="text-embedding-ada-002"):
         list: The generated embedding as a list of floating-point numbers.
     """
     response = openai.Embedding.create(input=text, model=model)
-    embedding = response["data"][0]["embedding"]
-    return embedding
+    return response["data"][0]["embedding"]

@@ -35,7 +35,7 @@ def insert_line(server):
                 400:
                     description: Invalid input. ATTENTION Double check escape sequences in new_text! The request must be a JSON and contain 'line_number', 'new_text', 'file_name' fields.
         """
-        console.verbose(f"insert_line request")
+        console.verbose("insert_line request")
         console.verbose(request.json)
 
         if not request.json or 'line_number' not in request.json or 'new_text' not in request.json or 'file_name' not in request.json:

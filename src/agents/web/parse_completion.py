@@ -18,9 +18,7 @@ def completion_pattern():
 COMPETION_PATTERN = completion_pattern()
 
 def parse_completion(completion):
-    match = COMPETION_PATTERN.match(completion)
-
-    if match:
+    if match := COMPETION_PATTERN.match(completion):
         return match.groupdict()
     else:
         return None
