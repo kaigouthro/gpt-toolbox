@@ -5,11 +5,18 @@ from .prompts import system, examples, user
 from . import verify_plan
 
 def agent(query):
-    plan = chat_completion(
+    completion = chat_completion(
         system(task_prompt_segment),
         examples(), 
         user(query)
     )
+    
+    # Extract the plan from the response
+    if completion and "choices" in completion:
+        plan = completion["choices"][0]["message"]["content"]
+    else:
+        print("No valid response from completion")
+        return None
 
     print("Got Plan")
     print("========")

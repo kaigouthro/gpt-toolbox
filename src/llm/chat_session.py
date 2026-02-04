@@ -6,16 +6,33 @@ from .chat_completion import (
 )
 from .model_specs import get_model_spec, ModelType
 
+class Usage:
+    """Simple wrapper to provide attribute access for usage data"""
+    def __init__(self, usage_dict):
+        if isinstance(usage_dict, dict):
+            self.prompt_tokens = usage_dict["prompt_tokens"]
+            self.completion_tokens = usage_dict["completion_tokens"]
+            self.total_tokens = usage_dict["total_tokens"]
+        else:
+            self.prompt_tokens = usage_dict.prompt_tokens
+            self.completion_tokens = usage_dict.completion_tokens
+            self.total_tokens = usage_dict.total_tokens
+
 def cost_of_call(usage, model):    
     model_spec = get_model_spec(model)
     
-    prompt_tokens, completion_tokens = usage.prompt_tokens, usage.completion_tokens
+    prompt_tokens = usage.prompt_tokens if hasattr(usage, 'prompt_tokens') else usage["prompt_tokens"]
+    completion_tokens = usage.completion_tokens if hasattr(usage, 'completion_tokens') else usage["completion_tokens"]
     usd_per_prompt_token, usd_per_completion_token = model_spec["usd_per_prompt_token"], model_spec["usd_per_completion_token"]
     
     return prompt_tokens * usd_per_prompt_token + completion_tokens * usd_per_completion_token
 
 def sum_total_tokens(successful_calls):
-    return sum(call["usage"].total_tokens for call in successful_calls)
+    return sum(
+        (call["usage"].total_tokens if hasattr(call["usage"], 'total_tokens') 
+         else call["usage"]["total_tokens"]) 
+        for call in successful_calls
+    )
 
 def sum_total_cost(successful_calls):
     return sum(cost_of_call(call["usage"], call["model"]) for call in successful_calls)
@@ -50,13 +67,15 @@ class ChatSession:
 
         self.handle_successful_completion(completion, model)
 
-        return completion.choices[0].message.content
+        # Access response content from dict format
+        return completion["choices"][0]["message"]["content"]
 
     def handle_failed_completion(self):
         self.failed_calls_count += 1
 
     def handle_successful_completion(self, completion, model):
-        self.successful_calls.append(dict(model=model, usage=completion.usage))
+        # completion is a dict, usage is also a dict
+        self.successful_calls.append(dict(model=model, usage=completion["usage"]))
 
     def current_token_usage(self):
         return sum_total_tokens(self.successful_calls)
