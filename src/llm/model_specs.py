@@ -91,8 +91,6 @@ gpt_4_turbo_preview_model_spec = create_completion_model_spec(
 )
 
 # Legacy models (kept for compatibility)
-
-# Legacy models (kept for compatibility)
 gpt_3_5_turbo_0301_model_spec = create_completion_model_spec(
     name="GPT-3.5 Turbo (0301)",
     openai_id="gpt-3.5-turbo-0301",
