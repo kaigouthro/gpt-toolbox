@@ -22,7 +22,7 @@ def sum_total_cost(successful_calls):
 
 def usage_report(successful_calls, failed_calls_count):
     report = [
-        f"[bold]Chat Session Report[/]",
+        "[bold]Chat Session Report[/]",
         f"Completions: {len(successful_calls)} ({failed_calls_count} failed)",
         f"Total Tokens: {sum_total_tokens(successful_calls)} [bold yellow](${sum_total_cost(successful_calls)})[/]",
     ]

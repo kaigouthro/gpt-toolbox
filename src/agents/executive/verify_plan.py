@@ -19,7 +19,7 @@ def verify_plan(plan_str, task_dictionary):
             return False
 
         # Check if required keys are present in the task
-        if not all(key in task for key in ("task", "id", "dep", "args")):
+        if any(key not in task for key in ("task", "id", "dep", "args")):
             print("Error: Missing required keys in task for task", task)
             return False
 
@@ -43,7 +43,7 @@ def verify_plan(plan_str, task_dictionary):
                 return False
 
         # Check args are 1:1 with parameters
-        parameter_names = set(p["name"] for p in task_dictionary_entry["parameters"])
+        parameter_names = {p["name"] for p in task_dictionary_entry["parameters"]}
         if set(task["args"].keys()) != parameter_names:
             print("Error: Arguments dont match parameters", task)
             return False
@@ -55,11 +55,11 @@ def verify_plan(plan_str, task_dictionary):
                 if not isinstance(arg_value, dict):
                     print("Error: Invalid JSON string (not a dict)", task)
                     return False
-                
+
                 if not all(isinstance(key, str) for key in arg_value.keys()):
                     print("Error: Invalid JSON string (keys not strings)", task)
                     return False
-                
+
                 # Check <OUTPUT_OF>-dep_id references in json payload
                 for v in arg_value.values():
                     if isinstance(v, str) and v.startswith("<OUTPUT_OF>-"):
