@@ -4,3 +4,6 @@ wandb
 .DS_Store
 .chromadb
 .pytest_cache
+__pycache__
+*.pyc
+*.pyo
