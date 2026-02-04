@@ -1,17 +1,21 @@
-import openai
+from openai import OpenAI
 
 from utils import console, env
 
 from .count_tokens import count_tokens
 from .model_specs import get_model_spec, ModelType
 
-def setup():
-    if openai_api_key := env["OPENAI_API_KEY"]:
-        openai.api_key = openai_api_key
-    else:
-        raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
+# Initialize OpenAI client
+_client = None
 
-setup()
+def get_client():
+    global _client
+    if _client is None:
+        if openai_api_key := env["OPENAI_API_KEY"]:
+            _client = OpenAI(api_key=openai_api_key)
+        else:
+            raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
+    return _client
 
 def compose_system(system):
     return [{
@@ -53,22 +57,44 @@ def chat_completion_token_counts(system, examples, user, model: ModelType):
         "model_max": get_model_spec(model)["max_tokens"]
     }
 
-def chat_completion(system, examples, user, model=ModelType.GPT_4):
+def chat_completion(system, examples, user, model=ModelType.GPT_4O):
     try:
+        client = get_client()
         model_spec = get_model_spec(model)
 
         messages = compose_messages(system, examples, user)
 
-        return openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model_spec["id"],
             messages=messages,
             temperature=0,  # based on HuggingGPT
         )
-    except openai.error.APIError as e:
-        console.error(f"(llm) OpenAI API returned an API Error: {e}")
-    except openai.error.APIConnectionError as e:
-        console.error(f"(llm) Failed to connect to OpenAI API: {e}")
-    except openai.error.RateLimitError as e:
-        console.error(f"(llm) OpenAI API request exceeded rate limit: {e}")
+        
+        # Convert response to dict-like format for backward compatibility
+        return {
+            "id": response.id,
+            "object": response.object,
+            "created": response.created,
+            "model": response.model,
+            "choices": [
+                {
+                    "index": choice.index,
+                    "message": {
+                        "role": choice.message.role,
+                        "content": choice.message.content,
+                    },
+                    "finish_reason": choice.finish_reason,
+                }
+                for choice in response.choices
+            ],
+            "usage": {
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens,
+            },
+        }
     except Exception as e:
-        console.error(f"(llm) {e.__class__.__name__}: {e}")
+        # New error handling for OpenAI v1.x
+        error_type = type(e).__name__
+        console.error(f"(llm) {error_type}: {e}")
+        return None
