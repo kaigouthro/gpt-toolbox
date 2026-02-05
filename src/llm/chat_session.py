@@ -6,18 +6,6 @@ from .chat_completion import (
 )
 from .model_specs import get_model_spec, ModelType
 
-class Usage:
-    """Simple wrapper to provide attribute access for usage data"""
-    def __init__(self, usage_dict):
-        if isinstance(usage_dict, dict):
-            self.prompt_tokens = usage_dict["prompt_tokens"]
-            self.completion_tokens = usage_dict["completion_tokens"]
-            self.total_tokens = usage_dict["total_tokens"]
-        else:
-            self.prompt_tokens = usage_dict.prompt_tokens
-            self.completion_tokens = usage_dict.completion_tokens
-            self.total_tokens = usage_dict.total_tokens
-
 def cost_of_call(usage, model):    
     model_spec = get_model_spec(model)
     

@@ -1,16 +1,21 @@
 from openai import OpenAI
+import threading
 from utils import env
 
-# Initialize OpenAI client
+# Initialize OpenAI client with thread-safe pattern
 _client = None
+_client_lock = threading.Lock()
 
 def get_client():
     global _client
     if _client is None:
-        if openai_api_key := env["OPENAI_API_KEY"]:
-            _client = OpenAI(api_key=openai_api_key)
-        else:
-            raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
+        with _client_lock:
+            # Double-check locking pattern
+            if _client is None:
+                if openai_api_key := env["OPENAI_API_KEY"]:
+                    _client = OpenAI(api_key=openai_api_key)
+                else:
+                    raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
     return _client
 
 def generate_embedding(text, model="text-embedding-ada-002"):

@@ -49,8 +49,8 @@ def create_completion_model_spec(name, openai_id, usd_per_prompt_token, usd_per_
 gpt_4o_model_spec = create_completion_model_spec(
     name="GPT-4o",
     openai_id="gpt-4o",
-    usd_per_prompt_token=2.50 / 1_000_000,
-    usd_per_completion_token=10.00 / 1_000_000,
+    usd_per_prompt_token=2.50 / 1000 / 1000,  # $2.50 per 1M tokens
+    usd_per_completion_token=10.00 / 1000 / 1000,  # $10.00 per 1M tokens
     max_tokens=128000,
     tokens_per_message=3,
     tokens_per_name=1,
@@ -60,8 +60,8 @@ gpt_4o_model_spec = create_completion_model_spec(
 gpt_4o_mini_model_spec = create_completion_model_spec(
     name="GPT-4o Mini",
     openai_id="gpt-4o-mini",
-    usd_per_prompt_token=0.150 / 1_000_000,
-    usd_per_completion_token=0.600 / 1_000_000,
+    usd_per_prompt_token=0.150 / 1000 / 1000,  # $0.15 per 1M tokens
+    usd_per_completion_token=0.600 / 1000 / 1000,  # $0.60 per 1M tokens
     max_tokens=128000,
     tokens_per_message=3,
     tokens_per_name=1,
@@ -71,8 +71,8 @@ gpt_4o_mini_model_spec = create_completion_model_spec(
 gpt_4_turbo_model_spec = create_completion_model_spec(
     name="GPT-4 Turbo",
     openai_id="gpt-4-turbo",
-    usd_per_prompt_token=10.00 / 1_000_000,
-    usd_per_completion_token=30.00 / 1_000_000,
+    usd_per_prompt_token=10.00 / 1000 / 1000,  # $10.00 per 1M tokens
+    usd_per_completion_token=30.00 / 1000 / 1000,  # $30.00 per 1M tokens
     max_tokens=128000,
     tokens_per_message=3,
     tokens_per_name=1,
@@ -82,8 +82,8 @@ gpt_4_turbo_model_spec = create_completion_model_spec(
 gpt_4_turbo_preview_model_spec = create_completion_model_spec(
     name="GPT-4 Turbo Preview",
     openai_id="gpt-4-turbo-preview",
-    usd_per_prompt_token=10.00 / 1_000_000,
-    usd_per_completion_token=30.00 / 1_000_000,
+    usd_per_prompt_token=10.00 / 1000 / 1000,  # $10.00 per 1M tokens
+    usd_per_completion_token=30.00 / 1000 / 1000,  # $30.00 per 1M tokens
     max_tokens=128000,
     tokens_per_message=3,
     tokens_per_name=1,
@@ -171,21 +171,21 @@ gpt_4_32k_0613_model_spec = create_completion_model_spec(
 text_embedding_ada_002_model_spec = {
     "name": "Text Embedding Ada (002)",
     "id": "text-embedding-ada-002",
-    "usd_per_input_token": 0.0001 / 1000,
+    "usd_per_input_token": 0.1 / 1000 / 1000,  # $0.10 per 1M tokens
     "max_tokens": 8191,
 }
 
 text_embedding_3_small_model_spec = {
     "name": "Text Embedding 3 Small",
     "id": "text-embedding-3-small",
-    "usd_per_input_token": 0.00002 / 1000,
+    "usd_per_input_token": 0.02 / 1000 / 1000,  # $0.02 per 1M tokens
     "max_tokens": 8191,
 }
 
 text_embedding_3_large_model_spec = {
     "name": "Text Embedding 3 Large",
     "id": "text-embedding-3-large",
-    "usd_per_input_token": 0.00013 / 1000,
+    "usd_per_input_token": 0.13 / 1000 / 1000,  # $0.13 per 1M tokens
     "max_tokens": 8191,
 }
 

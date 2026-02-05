@@ -1,20 +1,25 @@
-from openai import OpenAI
+from openai import OpenAI, APIError, APIConnectionError, RateLimitError
+import threading
 
 from utils import console, env
 
 from .count_tokens import count_tokens
 from .model_specs import get_model_spec, ModelType
 
-# Initialize OpenAI client
+# Initialize OpenAI client with thread-safe pattern
 _client = None
+_client_lock = threading.Lock()
 
 def get_client():
     global _client
     if _client is None:
-        if openai_api_key := env["OPENAI_API_KEY"]:
-            _client = OpenAI(api_key=openai_api_key)
-        else:
-            raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
+        with _client_lock:
+            # Double-check locking pattern
+            if _client is None:
+                if openai_api_key := env["OPENAI_API_KEY"]:
+                    _client = OpenAI(api_key=openai_api_key)
+                else:
+                    raise ValueError("Put your OpenAI API key in the OPENAI_API_KEY environment variable.")
     return _client
 
 def compose_system(system):
@@ -70,31 +75,67 @@ def chat_completion(system, examples, user, model=ModelType.GPT_4O):
             temperature=0,  # based on HuggingGPT
         )
         
-        # Convert response to dict-like format for backward compatibility
-        return {
+        # Convert response to dict-like format for backward compatibility,
+        # while preserving optional fields when present.
+        choices = []
+        for choice in response.choices:
+            message_dict = {
+                "role": choice.message.role,
+                "content": choice.message.content,
+            }
+
+            # Optional message-level fields (may not be present on all responses)
+            function_call = getattr(choice.message, "function_call", None)
+            if function_call is not None:
+                message_dict["function_call"] = function_call
+
+            tool_calls = getattr(choice.message, "tool_calls", None)
+            if tool_calls is not None:
+                message_dict["tool_calls"] = tool_calls
+
+            choice_dict = {
+                "index": choice.index,
+                "message": message_dict,
+                "finish_reason": choice.finish_reason,
+            }
+
+            # Optional choice-level fields
+            logprobs = getattr(choice, "logprobs", None)
+            if logprobs is not None:
+                choice_dict["logprobs"] = logprobs
+
+            choices.append(choice_dict)
+
+        result = {
             "id": response.id,
             "object": response.object,
             "created": response.created,
             "model": response.model,
-            "choices": [
-                {
-                    "index": choice.index,
-                    "message": {
-                        "role": choice.message.role,
-                        "content": choice.message.content,
-                    },
-                    "finish_reason": choice.finish_reason,
-                }
-                for choice in response.choices
-            ],
+            "choices": choices,
             "usage": {
                 "prompt_tokens": response.usage.prompt_tokens,
                 "completion_tokens": response.usage.completion_tokens,
                 "total_tokens": response.usage.total_tokens,
             },
         }
+
+        # Optional top-level fields
+        system_fingerprint = getattr(response, "system_fingerprint", None)
+        if system_fingerprint is not None:
+            result["system_fingerprint"] = system_fingerprint
+
+        return result
+    except APIError as e:
+        console.error(f"(llm) OpenAI API returned an API Error: {e}")
+        return None
+    except APIConnectionError as e:
+        console.error(f"(llm) Failed to connect to OpenAI API: {e}")
+        return None
+    except RateLimitError as e:
+        console.error(f"(llm) OpenAI API request exceeded rate limit: {e}")
+        return None
     except Exception as e:
-        # New error handling for OpenAI v1.x
+        # Catch any other unexpected errors
         error_type = type(e).__name__
         console.error(f"(llm) {error_type}: {e}")
         return None
