@@ -33,7 +33,7 @@ class BasicFewShotAgent:
     def handle_completion(self, completion, *args, **kwargs):
         return completion
 
-    def prediction(self, *args, model=ModelType.GPT_4, **kwargs):
+    def prediction(self, *args, model=ModelType.GPT_4O, **kwargs):
         with console.status(self.prediction_status_msg()):
             console.log(f"({self.agent_name}) Getting prediction...")
 

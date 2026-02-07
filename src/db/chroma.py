@@ -1,7 +1,6 @@
 import uuid
 
 import chromadb
-from chromadb.config import Settings
 
 from llm import generate_embedding
 
@@ -26,11 +25,8 @@ def _generate_embedding(text):
 
 class Chroma(AbstractDocumentDatabase):
     def __init__(self, database_name, persist_directory):
-        # TODO dont hardcode to local
-        self.client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=persist_directory,
-        ))
+        # Updated for ChromaDB v0.5.x+ (persistent client pattern)
+        self.client = chromadb.PersistentClient(path=persist_directory)
         self.collection = self.client.get_or_create_collection(
             name=database_name,
             embedding_function=_generate_embedding,
